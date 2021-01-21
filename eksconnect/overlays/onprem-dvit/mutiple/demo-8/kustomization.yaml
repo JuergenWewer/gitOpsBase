@@ -1,0 +1,8 @@
+nameSuffix: "-8"
+
+commonLabels:
+  app: demo-service-8
+  
+bases:
+- ../../../../base/demo-service
+

@@ -1,0 +1,3 @@
+       01 TEST.
+           05 RESPONSE-STATUS-CODE PIC 9(03).
+           05 TEST-ID PIC X(100).

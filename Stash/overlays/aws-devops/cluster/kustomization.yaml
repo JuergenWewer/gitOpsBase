@@ -1,0 +1,55 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namePrefix: ergo-devops-
+commonLabels:
+  variant: ergo-eksconnect-devops
+
+namespace: ergo-eksconnect-devops
+
+bases:
+- ../eksconnect-app
+- ../testadapter
+- ../mqserver
+
+# Build xyz
+images:
+- name: eksconnect
+  newName: hub.itgo-devops.org:18443/eksconnect/openshift/eksconnect
+  digest: sha256:8a61f2f4b4ff63242e407977411e4fd95e9f9b315da290dd55b6d3773cda4b93
+- name: mqserver
+  newName: hub.itgo-devops.org:18443/eksconnect/mqserver-dev
+  digest: sha256:5f79c6ed88a61cb472eb6a3e4ddc918e89a19005a11c8b71d3df01ceef77073d
+- name: testadapter
+  newName: hub.itgo-devops.org:18443/eksconnect/openshift/testadapter
+  digest: sha256:fd2ec1b524a754f210c133b4202267f9f9e395dd71a6f3e6cfed70b6cf9eb7cd
+
+  # questions:
+  # 1.how about multiple deployments at the same time (pr builds)
+  # 2. how about deleting a artifact or even a resource or a whole kustomization.yaml => they won't disappear
+  # prune? https://kubernetes.io/docs/tasks/manage-kubernetes-objects/declarative-config/#how-to-delete-objects
+  # k apply -k  eksconnect/overlays/aws-devops/cluster --prune -l variant=ergo-eksconnect-devops -n ergo-eksconnect-devops --dry-run
+# configmap/ergo-devops-eksconnect-config-map-kmchf7h946 configured (dry run)
+# configmap/ergo-devops-eksconnect-copybooks-config-map-gmb46f5c5f configured (dry run)
+# configmap/ergo-devops-testadapter-config-map-b79dffft2t configured (dry run)
+# secret/ergo-devops-eksconnect-keystore-secrets-h49f7t8dh2 configured (dry run)
+# secret/ergo-devops-eksconnect-secrets-7g46k859h8 configured (dry run)
+# secret/ergo-devops-testadapter-secrets-bkb7dhgcbd configured (dry run)
+# service/ergo-devops-testadapter configured (dry run)
+# deployment.apps/ergo-devops-eksconnect configured (dry run)
+# deployment.apps/ergo-devops-testadapter configured (dry run)
+# !!! v
+# configmap/ergo-devops-eksconnect-config-map-9bghb4mkgd pruned (dry run)
+# configmap/ergo-devops-eksconnect-config-map-c59hf6gch8 pruned (dry run)
+# configmap/ergo-devops-eksconnect-config-map-fgctktkc5h pruned (dry run)
+# configmap/ergo-devops-eksconnect-config-map-mhdkgtfb5t pruned (dry run)
+# configmap/ergo-devops-eksconnect-copybooks-config-map-fggc7ck289 pruned (dry run)
+# configmap/ergo-devops-mqserver-config-map-78569cdtgk pruned (dry run)
+# configmap/ergo-devops-testadapter-config-map-g9h9ggd785 pruned (dry run)
+# secret/ergo-devops-eksconnect-keystore-secrets-ddfgt4gktm pruned (dry run)
+# secret/ergo-devops-testadapter-secrets-f7586d88mh pruned (dry run)
+# secret/ergo-devops-testadapter-secrets-fh9hgk4k26 pruned (dry run)
+# service/ergo-devops-mqserver pruned (dry run)
+# deployment.apps/ergo-devops-mqserver pruned (dry run)
+# seems to work
+# problems error: error pruning nonNamespaced object /v1, Kind=Namespace: namespaces is forbidden: User "team-a" cannot list namespaces at the cluster scope: no RBAC policy matched

@@ -1,0 +1,9 @@
+commonLabels:
+  app: broken-service
+  
+bases:
+- ../../../base/demo-service
+
+images: 
+- name: demo
+  newName: broken-service

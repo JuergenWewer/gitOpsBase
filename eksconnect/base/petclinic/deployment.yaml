@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-petclinic
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-petclinic
+  strategy:
+    # allow complete shutdown
+    rollingUpdate:
+      # allow all unavailable
+      maxUnavailable: 100%
+      # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#max-surge
+      # allow 0 pods over the required one
+      maxSurge: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: demo-petclinic
+      name: demo-petclinic
+    spec:
+      containers:
+      - env:
+         - name: TZ
+           value: Europe/Berlin
+         - name: JAVA_TOOL_OPTIONS
+           value: -Dfile.encoding=UTF-8
+        envFrom:
+        - configMapRef:
+            name: petclinic-config-map
+        image: petclinic
+        imagePullPolicy: IfNotPresent
+        name: demo-petclinic
+        ports:
+        - containerPort: 8080
+          name: http-health
+        readinessProbe:
+          httpGet:
+            port: http-health
+            path: /manage/health
+          failureThreshold: 3
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 5
+        livenessProbe:
+          httpGet:
+            port: http-health
+            path: /manage/health
+          failureThreshold: 3
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 5
+        resources:
+          limits:
+            cpu: 1500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 256Mi
+        volumeMounts:
+        - mountPath: /tmp
+          name: "tmp-volume"
+      volumes:
+      - name: "tmp-volume"
+        emptyDir: {}

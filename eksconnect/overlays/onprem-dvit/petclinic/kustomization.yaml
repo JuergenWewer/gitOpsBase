@@ -1,0 +1,8 @@
+bases:
+- ../../../base/petclinic
+
+configMapGenerator:
+- name: petclinic-config-map
+  behavior: merge
+  literals:
+  - data.demotoggle=false

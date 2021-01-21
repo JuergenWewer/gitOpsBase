@@ -1,0 +1,5 @@
+crds:
+- openshift-deploymentconfig.json
+
+configurations:
+- myimagekind.yaml

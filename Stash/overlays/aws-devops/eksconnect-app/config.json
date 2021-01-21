@@ -1,0 +1,17 @@
+{
+    "eks": {
+      "mq": {
+        "queueManager": "QM1",
+        "channel":"CLTTEST.TO.Q1",
+        "host": "ergo-devops-mqserver",
+        "port": 1414,
+        "incomingQueue": "SYAR5D.IN.QUEUE",
+        "appname": "eksconnect-aws-devops-app",
+        "cipherSuite": ""
+      },
+      "outbound": {
+        "serviceAdapterUrl": "https://ergo-devops-testadapter:8443/testadapter/{version}/{startcode}",
+        "timeout": 5000
+      }
+    }
+}

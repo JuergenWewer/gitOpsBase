@@ -1,0 +1,17 @@
+{
+  "eks": {
+    "mq": {
+      "queueManager": "*QSTL",
+      "channel":"CLTERGO.TO.ITLG.3.S",
+      "host": "10.250.100.211",
+      "port": 14160,
+      "incomingQueue": "SYAR5D.IN.QUEUE",
+      "appname": "eksconnect-onprem-dvit-app",
+      "cipherSuite": "SSL_RSA_WITH_NULL_MD5"
+    },
+    "outbound": {
+      "serviceAdapterUrl": "http://ergo-dvit-testadapter:8443/testadapter/{version}/{startcode}",
+      "timeout": 5000
+    }
+  }
+}

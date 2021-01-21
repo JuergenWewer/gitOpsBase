@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: testadapter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment: testadapter
+  strategy:
+    # allow complete shutdown
+    rollingUpdate:
+      # allow all unavailable
+      maxUnavailable: 100%
+      # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#max-surge
+      # allow 0 pods over the required one
+      maxSurge: 0
+

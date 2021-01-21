@@ -1,0 +1,170 @@
+#!/bin/bash -e
+
+# Also inherit the error handling
+set -eEuo pipefail
+
+# Better errorhandling
+err_report() {
+    >&2 echo "Exit code $? on line $1" 
+}
+
+# Write on error
+trap 'err_report $LINENO' ERR
+
+# Run gitops pull request loop
+# tbd: write in go
+
+readonly github_host=github.itergo.com
+GITOPS_ORG=${GITOPS_ORG:-it-go}
+GITOPS_REPO=${GITOPS_REPO:-eksconnect-gitops-dev}
+GITOPS_USER=${GITOPS_USER:-v167277}
+GITOPS_TOKEN=${github}
+GITOPS_FOLDER=${GITOPS_FOLDER:-eksconnect/overlays/onprem-dvit/cluster}
+GITOPS_UNIQUE_LABEL=${GITOPS_UNIQUE_LABEL:-variant=onprem-dvit}
+GITOPS_STATUS_CONTEXT=${GITOPS_STATUS_CONTEXT:-Validation}
+
+readonly gitops_repopath=${GITOPS_ORG}/${GITOPS_REPO}
+readonly gitops_repo_url=https://${GITOPS_USER}:${GITOPS_TOKEN}@${github_host}/${gitops_repopath}
+readonly gitops_api_url=https://${github_host}/api/v3
+readonly auth_header="Authorization: token ${GITOPS_TOKEN}"
+
+echo "$(date +%F--%H-%M-%S) Starting new Gitops pullrequests instance"
+
+# better: no polling but webhooks...
+cd /tmp
+
+tempDir=$(mktemp -d "${TMPDIR:-/tmp/}$(basename "$0").XXXXXXXXXXXX")
+mkdir -p "${tempDir}"
+trap 'rm -rf ${tempDir}' EXIT
+
+echo "$(date +%F--%H-%M-%S) tmp:${tempDir}"
+
+function set_status {
+    [[ ${1-} ]] && local url=$1
+    [[ ${2-} ]] && local status=$2
+    [[ ${3-} ]] && local context=$3
+    [[ ${4-} ]] && local description=$3
+
+    echo "$(date +%F--%H-%M-%S) setting context '${GITOPS_STATUS_CONTEXT}' to '${status}'"  
+    curl -s -H  "${auth_header}" -H "Content-Type: application/json" "${url}" -d "{\"state\":\"${status}\",\"context\":\"${context}\", \"description\": \"${description}\"}" > /dev/null
+}
+
+pull_repository() {
+    [[ ${1-} ]] && local repo_full=$1
+    [[ ${2-} ]] && local repo=$2
+    [[ ${3-master} ]] && local ref=$3
+    echo "$(date +%F--%H-%M-%S) Cloning of Repo ${repo} with branch ${ref}"
+    cd "${tempDir}"
+
+    ## remove repo to reduce strange merge effects
+    rm -rf "${repo}"
+
+    ## clone only if nothing is here
+    if [[ ! -d ${repo} ]]; then
+        echo "$(date +%F--%H-%M-%S) git clone https://***:***@${github_host}/${repo_full}" 
+        git clone "https://${GITOPS_USER}:${GITOPS_TOKEN}@${github_host}/${repo_full}"
+    fi 
+
+    cd "${repo}"
+
+    # workaround for missing user info
+    git config user.email 'marius.filipowski@itergo.com'
+    git config user.name 'EKS-Connect Jenkins Bot'
+
+    echo "$(date +%F--%H-%M-%S) git pull"
+    git pull
+    echo "$(date +%F--%H-%M-%S) git checkout ${ref}"
+    git checkout "${ref}"
+}
+
+validate_deployment() {
+    [[ ${1-master} ]] && local repo=$1
+    [[ ${2-} ]] && local ref=$2
+    [[ ${3-} ]] && local issue_url=$3
+    
+    echo "$(date +%F--%H-%M-%S) Validation of Repo ${repo} with branch ${ref}"
+    cd "${tempDir}"
+    cd "${repo}"
+    echo "$(date +%F--%H-%M-%S) git checkout ${ref}"
+    git checkout "${ref}"
+    
+    # run dry-run and validate => return code set to status of this pr commit...
+    local output
+    local rc
+    set +e
+    output=$( (kubectl apply -k "${GITOPS_FOLDER}" --dry-run) 2>&1)
+    rc=$?
+    echo "${output}"
+    set -e
+
+    if [[ ${rc} -ne 0 ]]; then
+        echo "$(date +%F--%H-%M-%S) Validation failed."
+        local data
+        data="$( jq -nc --arg str "Result from validation: $output" '{"body": $str}' )" 
+        # in case of error - get result and post it as message for demo purposes
+        curl -s -H "${auth_header}" "${issue_url}/comments" -H "Accept: application/vnd.github.v3.raw+json" -d "${data}" > /dev/null
+    fi
+
+    return $rc;
+}
+
+while true; do
+    # Are there any pull requests in this repo for master
+    pull_json=$(curl -s -H "${auth_header}" "${gitops_api_url}/repos/${gitops_repopath}/pulls?base=master")
+    pr_count=$(jq length <<< "$pull_json")
+
+    if (( pr_count > 0 )); then
+        echo "$(date +%F--%H-%M-%S) Found ${pr_count} pull request targeting master"
+        
+        # if so, check them, if there's already a status for the latest commit with a context
+        for (( i=0; i < pr_count; i++ ))
+        do
+            echo "$(date +%F--%H-%M-%S) Processing PR ${i}"
+          
+            pr_json=$(jq --arg index $i '.[$index|tonumber]' <<< "$pull_json")
+            pr_head=$(jq --raw-output '.head.sha' <<< "$pr_json")
+            pr_ref=$(jq --raw-output '.head.ref' <<< "$pr_json")
+            pr_repo=$(jq --raw-output '.head.repo.name' <<< "$pr_json")
+            pr_repo_full=$(jq --raw-output '.head.repo.full_name' <<< "$pr_json")
+            pr_issue_url=$(jq --raw-output '.issue_url' <<< "$pr_json")
+            pr_statuses_url=$(jq --raw-output '.statuses_url' <<< "$pr_json")
+
+            ## if status url is not empty... 
+            echo "$(date +%F--%H-%M-%S) Getting status for pr head ${pr_head}"
+            echo "$(date +%F--%H-%M-%S) ${pr_statuses_url}"  
+
+            status_json=$(curl --fail -s -H "${auth_header}" "${pr_statuses_url}")
+            # echo "$(date +%F--%H-%M-%S) status_json ${status_json}"  
+
+            # filter for "our status" context GITOPS_STATUS_CONTEXT
+            GITOPS_STATUS_CONTEXT="YamlValidation"
+            status_count=$(jq --raw-output --arg c "${GITOPS_STATUS_CONTEXT}" '.[] | select(.context==$c) | .state' <<< "$status_json" | wc -l  | tr -d '[:space:]')
+            pending_status_count=$(jq --raw-output --arg c "${GITOPS_STATUS_CONTEXT}" '[.[] | select(.context==$c)][0] | select(.state=="pending")' <<< "$status_json" | wc -l  | tr -d '[:space:]')
+            
+            echo "$(date +%F--%H-%M-%S) status_count '${status_count}'"  
+            echo "$(date +%F--%H-%M-%S) pending_status_count '${pending_status_count}'"  
+
+            # Do initial PR yamlvalidation or if there are any pending ones.
+            if (( status_count == 0 )) || (( pending_status_count > 0 )); then
+                echo "$(date +%F--%H-%M-%S) Starting YamlValidation"  
+
+                # if there's no status, we need to set it to pending
+                if (( pending_status_count == 0 )) ; then
+                    set_status "${pr_statuses_url}" "pending" "${GITOPS_STATUS_CONTEXT}" "Validation of gitops yaml to be applied." 
+                fi
+                pull_repository "${pr_repo_full}" "${pr_repo}" "${pr_ref}"
+                
+                if validate_deployment "${pr_repo}" "${pr_ref}" "${pr_issue_url}" ; then
+                    status="success"
+                else
+                    status="error"
+                fi
+
+                set_status "${pr_statuses_url}" "${status}" "${GITOPS_STATUS_CONTEXT}" "Validation of gitops yaml to be applied."
+            fi
+        done
+    fi
+
+    # wait
+    sleep 30
+done

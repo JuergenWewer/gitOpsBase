@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitops-pullrequests
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment: gitops-pullrequests
+  strategy:
+    # allow complete shutdown
+    rollingUpdate:
+      # allow all unavailable
+      maxUnavailable: 100%
+      # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#max-surge
+      # allow 0 pods over the required one
+      maxSurge: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        deployment: gitops-pullrequests
+      name: gitops-pullrequests
+    spec:
+      containers:
+        - envFrom:
+            - secretRef:
+                name: default-token-16727
+            - configMapRef:
+                name: gitops-config
+          image: gitops
+          command: ["/opt/app-root/pullrequests"]
+          name: gitops-pullrequests
+          resources:
+            limits:
+              cpu: "100m"
+              memory: "256Mi"
+            requests:
+              cpu: "1m"
+              memory: "128Mi"
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp-volume-gitops
+            - mountPath: /opt/app-root
+              name: script-volume-gitops
+      serviceAccountName: gitops-pullrequests
+      volumes:
+        - name: tmp-volume-gitops
+          emptyDir: {}
+        - name: script-volume-gitops
+          configMap:
+              name: gitops-pr-script
+              defaultMode: 0744

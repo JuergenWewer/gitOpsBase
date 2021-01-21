@@ -1,0 +1,68 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  name: eksconnect
+spec:
+  replicas: 1
+  selector:
+    deploymentConfig: eksconnect
+  template:
+    metadata:
+      labels:
+        deploymentConfig: eksconnect
+      name: eksconnect
+    spec:
+      containers:
+        - envFrom:
+            - configMapRef:
+                name: eksconnect-config-map
+          env:
+            - name: TZ
+              value: "Europe/Berlin"
+          image: docker
+          imagePullPolicy: IfNotPresent
+          name: eksconnect
+          resources:
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+            requests:
+              cpu: "1m"
+              memory: "512Mi"
+          ports:
+            - containerPort: 8081
+              name: http-health
+          readinessProbe:
+            httpGet:
+              port: http-health
+              path: /health
+            initialDelaySeconds: 15
+            timeoutSeconds: 1
+          livenessProbe:
+            httpGet:
+              port: http-health
+              path: /health
+            initialDelaySeconds: 15
+            timeoutSeconds: 1
+          volumeMounts:
+            - mountPath: /tmp
+              name: "tmp-volume"
+            - mountPath: /opt/app-root/ssl/
+              name: eksconnect-keystore-secrets
+            - mountPath: /opt/app-root/copybooks
+              name: eksconnect-copybooks-config-map
+            - mountPath: /etc/secrets
+              name: eksconnect-secrets
+          restartPolicy: Always
+      volumes:
+        - name: "tmp-volume"
+          emptyDir: {}
+        - name: eksconnect-keystore-secrets
+          secret:
+            secretName: eksconnect-keystore-secrets
+        - name: eksconnect-copybooks-config-map
+          configMap:
+            name: eksconnect-copybooks-config-map
+        - name: eksconnect-secrets
+          secret:
+            secretName: eksconnect-secrets

@@ -1,0 +1,7 @@
+#!/bin/bash -e
+
+# dumb service for demo purposes
+while true; do
+    echo "$(date +%F--%H-%M-%S) Living"
+    sleep 10
+done

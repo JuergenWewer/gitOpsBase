@@ -1,0 +1,16 @@
+commonLabels:
+  app: gitops-pullrequests
+  # cannot change this fields anymore.. when kubectl applying
+  version: "0.1"
+  kustomize: "true"
+  kind: toolbelt
+
+resources:
+- service-account.yaml
+- role-binding.yaml
+- deploymentk8s.yaml
+
+configMapGenerator:
+  - name: gitops-pr-script
+    files:
+      - pullrequests

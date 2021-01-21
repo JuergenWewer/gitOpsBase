@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: testadapter
+spec:
+  template:
+    spec:
+      # containers:
+      #   - name: testadapter
+      #     # Just spin & wait forever
+      #     command: [ "/bin/bash", "-c", "--" ]
+      #     args: [ "while true; do sleep 30; done;" ]
+      imagePullSecrets:
+      - name: nexus-reader-credentials

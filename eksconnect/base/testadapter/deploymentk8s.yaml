@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: testadapter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment: testadapter
+  template:
+    metadata:
+      labels:
+        deployment: testadapter
+      name: testadapter
+    spec:
+      containers:
+        - envFrom:
+            - configMapRef:
+                name: testadapter-config-map
+          image: testadapter
+          imagePullPolicy: IfNotPresent
+          name: testadapter
+          ports:
+            - containerPort: 8443
+              name: http
+              protocol: TCP
+          resources:
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+            requests:
+              cpu: "1m"
+              memory: "512Mi"
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp-volume
+            - mountPath: /opt/app-root/ssl
+              name: testadapter-secrets-volume
+      volumes:
+        - name: "tmp-volume"
+          emptyDir: {}
+        - name: testadapter-secrets-volume
+          secret:
+            secretName: testadapter-secrets

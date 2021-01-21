@@ -1,0 +1,22 @@
+commonLabels:
+  app: demo-petclinic
+  kustomize: "true"
+  kind: demo
+
+resources:
+- deployment.yaml
+- service.yaml
+- route.yaml
+
+configMapGenerator:
+- name: petclinic-config-map
+  files:
+  - EXAMPLE_PROPERTY_FILE=example.properties
+  literals:
+  - EXAMPLE_PROPERTY_1=lorem
+  - EXAMPLE_PROPERTY_2=ipsum
+  - SPRING_APPLICATION_JSON={}
+  - data.demotoggle=false
+
+crds:
+- openshift.route.json

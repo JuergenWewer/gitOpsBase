@@ -1,0 +1,12 @@
+commonLabels:
+  app: eksconnect
+  version: "2.3"
+  kustomize: "true"
+
+resources:
+- deploymentk8s.yaml
+#- deployment.yaml
+
+configMapGenerator:
+- name: eksconnect-config-map
+- name: eksconnect-copybooks-config-map

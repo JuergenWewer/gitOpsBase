@@ -1,0 +1,21 @@
+bases:
+- ../../base/eksconnect-app
+
+# images:
+# - name: eksconnect
+#   newName: hub.itgo-devops.org:18443/eksconnect/openshift/eksconnect
+#   digest: sha256:8a61f2f4b4ff63242e407977411e4fd95e9f9b315da290dd55b6d3773cda4b93
+
+configMapGenerator:
+- name: eksconnect-copybooks-config-map
+  behavior: merge
+  files:
+  - copybooks/VSS9000
+  - copybooks/VSS21591
+  - copybooks/VSS21592
+  - copybooks/VSS21593
+  - copybooks/VSS21594
+  - copybooks/VSS21595
+  - copybooks/VSS21596
+  - copybooks/VSS21597
+  - copybooks/VSS21598

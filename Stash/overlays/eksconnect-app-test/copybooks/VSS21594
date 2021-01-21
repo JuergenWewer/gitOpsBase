@@ -1,0 +1,35 @@
+       01 GROUP1.
+
+           05 NAME.
+             10 VORNAME PIC X(20).
+             10 NACHNAME PIC X(25).
+
+           05 "X-"ALTER PIC 9(03).
+
+           05 ADRESSE.
+              10 STRASSE.
+                 15 STRASSE-NAME PIC X(20).
+                 15 HAUSNUMMER PIC 9(3). 
+              10 PLZ PIC 9(05).
+              10 ORT PIC X(20).
+
+           05 DATUMSFELDER.
+
+      *§§[DATATYPE("DATE8")]
+               10 MY-DATE8 PIC X(08).
+
+      *§§[DATATYPE("DATETIME26")]
+               10 ISO-DATE26 PIC X(26).
+
+      *§§[DATATYPE("DATETIMEDB2")]
+               10 DB2-DATEDB2 PIC X(26).
+
+               10 DECIMALS.
+                  20 DECIMAL-NORMAL PICTURE 9(19),99.
+                  20 DECIMAL-NEGATIVE  PIC -9(19),99.
+                  20 DECIMAL-PRECISION PIC    9,999999.
+                  20 DECIMAL-NEGATIVE-PRECISION   PICTURE IS -99,9(6).
+
+           05 GROUP-TABLE OCCURS 4.
+              10 NUMBER-TABLE-1 PIC 9(2) OCCURS 2.
+              10 NUMBER-TABLE-2 PIC 9(2) OCCURS 2.

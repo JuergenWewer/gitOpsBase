@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment: demo-service
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 100%
+      maxSurge: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        deployment: demo-service
+      name: demo-service
+    spec:
+      containers:
+        - image: demo
+          command: ["/opt/app-root/logic"]
+          name: demo-service
+          resources:
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+            requests:
+              cpu: "1m"
+              memory: "128Mi"
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp-volume-gitops
+            - mountPath: /opt/app-root
+              name: script-volume-gitops
+      volumes:
+        - name: tmp-volume-gitops
+          emptyDir: {}
+        - name: script-volume-gitops
+          configMap:
+              name: demo-script
+              defaultMode: 0744

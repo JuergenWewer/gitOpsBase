@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mqserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment: mqserver
+  template:
+    metadata:
+      labels:
+        deployment: mqserver
+      name: mqserver
+    spec:
+      containers:
+        - envFrom:
+            - configMapRef:
+                name: mqserver-config-map
+          image: mqserver
+          imagePullPolicy: IfNotPresent
+          name: mqserver
+          ports:
+            - containerPort: 1414
+              name: mq
+              protocol: TCP
+          resources:
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+            requests:
+              cpu: "1m"
+              memory: "256Mi"
+      securityContext:
+        runAsUser: 888
+        # The ibm image doesn't support openshift 100%,
+        # it needs to have uid 888 in the container for the runtime user
+        # normally, openshift would randomize the uid, but then it won't work
+        # so we need to use this prepared service account that is allowed
+        # to use the scc group "nonroot"
+      serviceAccount: ergo-eksconnect-nonrootuser

@@ -1,0 +1,5 @@
+       01 TEST3.
+           05 NAME PIC X(20).
+           05 AGE PIC 9(03).
+           05 LARGE-NUMBER PIC 9(19).
+           05 LONG-TEXT PIC X(732).

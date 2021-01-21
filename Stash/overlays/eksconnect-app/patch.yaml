@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eksconnect
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment: eksconnect
+  strategy:
+    # allow complete shutdown
+    rollingUpdate:
+      # allow all unavailable
+      maxUnavailable: 100%
+      # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#max-surge
+      # allow 0 pods over the required one
+      maxSurge: 0
+  template:
+      spec:
+        containers:
+          - name: eksconnect
+            readinessProbe: null
+            livenessProbe: null
+            volumeMounts:
+              - mountPath: /opt/app-root/ssl2/
+                name: eksconnect-testadapter-secrets
+        volumes:
+          - name: eksconnect-testadapter-secrets
+            secret:
+              secretName: eksconnect-testadapter-secrets

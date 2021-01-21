@@ -1,0 +1,68 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: eksconnect
+
+namePrefix: ergo-dvit-
+
+commonLabels:
+  variant: onprem-dvit
+
+########################
+bases:
+#- ../petclinic
+# - ../mutiple/demo-1
+# - ../mutiple/demo-2
+# - ../mutiple/demo-3
+# - ../mutiple/demo-4
+# - ../mutiple/demo-5
+# - ../mutiple/demo-6
+# - ../broken-service
+
+# - ../eksconnect-app
+# - ../testadapter
+# - ../testadapter-no-ssl
+# - ../mqserver
+- ./../../../base/gitops/
+# - ./../../../base/gitops-pullrequests/
+
+images:
+- name: petclinic
+  newName: hub.itgo-devops.org:18443/oscp/petclinic/petclinic-ubi8-openjdk18
+  # newTag: latest <- is not immutable/stable; can change anytime
+  digest: sha256:34585b771f8ebd48c7471df7967178826c407edda0335b2c9dbec0ae597ba924
+
+- name: demo
+  newName: hub.itgo-devops.org:18443/eksconnect/openshift/demo-service
+  newTag: v0.1
+
+- name: broken-service
+  newName: hub.itgo-devops.org:18443/eksconnect/openshift/demo-service
+  digest: sha256:ed756b5fb5966f6cd97ce553c0fb4b0079f2fa8ff0adcbb34cab2c9ce6fdecfc
+  # digest: sha256:broken
+
+
+
+
+
+
+- name: eksconnect
+  newName: hub.itgo-devops.org:18443/eksconnect/openshift/eksconnect
+  digest: sha256:8a61f2f4b4ff63242e407977411e4fd95e9f9b315da290dd55b6d3773cda4b93
+- name: gitops
+  newName: hub.itgo-devops.org:18443/eksconnect/openshift/ergo-eksconnect-gitops
+  digest: sha256:e1ae7c0fdf5a3535d1f5f93d13966fcdd2182c5349187a4f85bb3c6bd01f81d2
+- name: testadapter
+  newName: hub.itgo-devops.org:18443/eksconnect/openshift/pr193/testadapter
+  digest: sha256:ac98c2bea78c1a6965f46fbc1de79d34113dc314bdf296c745720c7a6002e5c6
+
+configMapGenerator:
+  - name: gitops-config
+    behavior: merge
+    literals:
+      - GITOPS_ORG=it-go
+      - GITOPS_REPO=eksconnect-gitops-dev
+      - GITOPS_USER=svc-jenkins-eksconnect
+      - GITOPS_FOLDER=eksconnect/overlays/onprem-dvit/cluster
+      - GITOPS_UNIQUE_LABEL=variant=onprem-dvit
+      - GITOPS_SLEEP=15

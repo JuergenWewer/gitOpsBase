@@ -1,0 +1,10 @@
+bases:
+- ../../../base/mqserver
+
+# images:
+# - name: mqserver
+#   newName: hub.itgo-devops.org:18443/eksconnect/mqserver-dev
+#   digest: sha256:5f79c6ed88a61cb472eb6a3e4ddc918e89a19005a11c8b71d3df01ceef77073d
+  
+patchesStrategicMerge:
+  - regcred.yaml

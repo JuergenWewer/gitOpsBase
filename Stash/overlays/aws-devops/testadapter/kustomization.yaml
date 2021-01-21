@@ -1,0 +1,16 @@
+bases:
+- ../../../base/testadapter
+
+# images:
+# - name: testadapter
+#   newName: hub.itgo-devops.org:18443/eksconnect/openshift/testadapter
+#   digest: sha256:fd2ec1b524a754f210c133b4202267f9f9e395dd71a6f3e6cfed70b6cf9eb7cd
+
+# TODO: generate a self signed cert on the fly for the requested prefix and name
+secretGenerator:
+- name: testadapter-secrets
+  files:
+  - keystore.p12=testadapter.p12
+  
+patchesStrategicMerge:
+  - regcred.yaml

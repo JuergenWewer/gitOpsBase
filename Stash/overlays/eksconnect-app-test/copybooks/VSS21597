@@ -1,0 +1,4 @@
+       01  TEST6.
+          10 INTEGER-NORMAL PICTURE 9(15).
+          10 INTEGER-NEGATIVE PIC  -9(15).
+          10 INTEGER-ZERO PICTURE IS -99.

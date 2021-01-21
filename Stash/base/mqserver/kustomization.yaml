@@ -1,0 +1,15 @@
+commonLabels:
+  app: mqserver
+  version: "2.3"
+  kustomize: "true"
+  kind: acceptance-tests
+
+resources:
+- service.yaml
+- deploymentk8s.yaml
+
+configMapGenerator:
+- name: mqserver-config-map
+  literals:
+    - LICENSE=accept
+    - MQ_QMGR_NAME=QM1

@@ -1,0 +1,4 @@
+       01  TABLES1.
+          05 GROUP-TABLE OCCURS 4.
+              15 NUMBER-TABLE-1 PIC 9(2) OCCURS 2.
+              15 NUMBER-TABLE-2 PIC 9(2) OCCURS 2.

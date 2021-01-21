@@ -1,0 +1,12 @@
+commonLabels:
+  app: demo-service
+  kustomize: "true"
+  kind: demo
+
+resources:
+- deployment.yaml
+
+configMapGenerator:
+  - name: demo-script
+    files:
+      - logic

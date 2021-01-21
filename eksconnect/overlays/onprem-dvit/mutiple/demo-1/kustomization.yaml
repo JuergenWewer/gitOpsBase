@@ -1,0 +1,10 @@
+nameSuffix: "-1"
+
+commonLabels:
+  app: demo-service-1
+
+bases:
+- ../../../../base/demo-service
+
+patchesStrategicMerge:
+  - patch.yaml

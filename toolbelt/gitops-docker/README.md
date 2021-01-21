@@ -1,0 +1,1 @@
+Moved to https://github.itergo.com/ERGO-GitOps/GitOps-Simple-Deployer

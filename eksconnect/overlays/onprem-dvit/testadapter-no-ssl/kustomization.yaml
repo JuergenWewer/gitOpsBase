@@ -1,0 +1,8 @@
+bases:
+- ../testadapter
+
+configMapGenerator:
+- name: testadapter-config-map
+  behavior: merge
+  literals:
+    - SPRING_PROFILES_ACTIVE=no-ssl 

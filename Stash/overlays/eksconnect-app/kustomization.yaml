@@ -1,0 +1,24 @@
+bases:
+- ../../eksconnect-app-test
+
+
+patchesStrategicMerge:
+  - patch.yaml
+
+configMapGenerator:
+- name: eksconnect-config-map
+  behavior: merge
+  files: 
+    - SPRING_APPLICATION_JSON=config.json
+  literals:
+    - ERGOUSER=lcecsat
+    - USE_UNSECURE_LEGACY_MODE="true"
+    #- SPRING_PROFILES_ACTIVE=json 
+    # add keystore for https calls to our testadapter
+    # - JAVA_TOOL_OPTIONS="-Djavax.net.ssl.keyStore=/opt/app-root/ssl2/ergo-dvit-testadapter_pub.jks -Djavax.net.ssl.trustStore=/opt/app-root/ssl2/ergo-dvit-testadapter_pub.jks -Djavax.net.ssl.keyStorePassword=eksconnect"
+    # - JAVA_TOOL_OPTIONS="-Djavax.net.debug=all"
+
+secretGenerator:
+- name: eksconnect-testadapter-secrets
+  files:
+  - ergo-dvit-testadapter_pub.jks

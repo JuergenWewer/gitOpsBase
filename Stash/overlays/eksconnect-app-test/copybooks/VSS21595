@@ -1,0 +1,7 @@
+       01 PARENT.
+      *§§[DATATYPE("DATE8")]
+          10 MY-DATE8 PIC X(08).
+      *§§[DATATYPE("DATETIME26")]
+          10 ISO-DATE26 PIC X(26).
+      *§§[DATATYPE("DATETIMEDB2")]
+          10 DB2-DATEDB2 PIC X(26).

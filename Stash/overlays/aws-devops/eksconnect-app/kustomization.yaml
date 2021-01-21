@@ -1,0 +1,41 @@
+bases:
+- ../../eksconnect-app-test
+
+# don't specify it here, since it cannot be changed afterwards
+# images:
+# - name: eksconnect
+#   newName: hub.itgo-devops.org:18443/eksconnect/openshift/eksconnect
+#   digest: sha256:8a61f2f4b4ff63242e407977411e4fd95e9f9b315da290dd55b6d3773cda4b93
+
+secretGenerator:
+- name: eksconnect-secrets
+  literals:
+  # Dummy, test secrets
+  - eks.mq.user=testuser
+  - eks.mq.password=passw0rd
+  - eks.outbound.user=user
+  - eks.outbound.password=password
+  - eks.ssl.keystorePassword=eksconnect
+
+# TODO: could be created automatically?
+- name: eksconnect-keystore-secrets
+  files:
+  - key.jks=keystore.p12
+
+# TODO: json seems not to be very updatable based on single properties
+# perhaps simple java.properties
+# need to update url for testadapter also mq settings
+configMapGenerator:
+- name: eksconnect-config-map
+  behavior: merge
+  files: 
+    - SPRING_APPLICATION_JSON=config.json
+  literals:
+    - ERGOUSER=tomcat
+    - SPRING_PROFILES_ACTIVE=default
+    - TZ="Europe/Berlin"
+    # need to set it here in order to use our testserver correctly
+    - JAVA_TOOL_OPTIONS="-Djavax.net.ssl.keyStore=/opt/app-root/ssl/key.jks -Djavax.net.ssl.trustStore=/opt/app-root/ssl/key.jks -Djavax.net.ssl.keyStorePassword=eksconnect"
+
+patchesStrategicMerge:
+  - regcred.yaml

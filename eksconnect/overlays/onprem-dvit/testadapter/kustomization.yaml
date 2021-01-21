@@ -1,0 +1,11 @@
+bases:
+- ../../../base/testadapter
+
+secretGenerator:
+- name: testadapter-secrets
+  files:
+  - keystore.p12=ergo-dvit-testadapter.jks
+
+patchesStrategicMerge:
+  - patch.yaml
+

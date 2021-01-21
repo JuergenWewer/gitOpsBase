@@ -1,0 +1,16 @@
+commonLabels:
+  app: testadapter
+  version: "2.3"
+  kustomize: "true"
+  kind: acceptance-tests
+
+resources:
+- service.yaml
+- deploymentk8s.yaml
+
+configMapGenerator:
+- name: testadapter-config-map
+  literals:
+    - JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8"
+    - TZ="Europe/Berlin"
+    - SPRING_APPLICATION_JSON={}
